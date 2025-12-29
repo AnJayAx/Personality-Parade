@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personality Sorter - Host</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 3em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      margin-bottom: 10px;
+    }
+
+    .room-code {
+      font-size: 4em;
+      font-weight: bold;
+      background: rgba(255,255,255,0.2);
+      padding: 20px 40px;
+      border-radius: 20px;
+      display: inline-block;
+      letter-spacing: 10px;
+      margin: 20px 0;
+      backdrop-filter: blur(10px);
+    }
+
+    .phase-indicator {
+      font-size: 1.5em;
+      margin: 20px 0;
+      padding: 15px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+    }
+
+    /* Lobby phase */
+    .players-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+
+    .player-card {
+      background: rgba(255,255,255,0.15);
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.2);
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .player-avatar {
+      font-size: 4em;
+      margin: 10px 0;
+    }
+
+    .player-name {
+      font-size: 1.3em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .player-score {
+      font-size: 1.1em;
+      color: #ffd700;
+    }
+
+    .btn {
+      background: rgba(255,255,255,0.25);
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.3em;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+      margin: 10px;
+    }
+
+    .btn:hover {
+      background: rgba(255,255,255,0.35);
+      transform: scale(1.05);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Category voting */
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin: 30px 0;
+    }
+
+    .category-card {
+      background: rgba(255,255,255,0.15);
+      padding: 25px;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      border: 3px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .category-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    .category-name {
+      font-size: 1.8em;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .category-roles {
+      font-size: 1em;
+      opacity: 0.9;
+    }
+
+    .category-role {
+      padding: 8px;
+      margin: 5px 0;
+      background: rgba(0,0,0,0.2);
+      border-radius: 5px;
+    }
+
+    .vote-progress {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 20px 0;
+    }
+
+    /* Assignment phase */
+    .assignment-container {
+      margin: 30px 0;
+    }
+
+    .role-assignment {
+      background: rgba(255,255,255,0.15);
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+    }
+
+    .role-header {
+      font-size: 1.8em;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .role-desc {
+      font-size: 1.1em;
+      opacity: 0.8;
+      margin-bottom: 15px;
+    }
+
+    .vote-bar-container {
+      margin: 10px 0;
+    }
+
+    .vote-bar {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+      gap: 10px;
+    }
+
+    .vote-bar-player {
+      flex: 0 0 150px;
+      font-weight: bold;
+    }
+
+    .vote-bar-fill {
+      flex: 1;
+      height: 30px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 5px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .vote-bar-progress {
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #8BC34A);
+      transition: width 0.5s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .timer {
+      font-size: 2.5em;
+      text-align: center;
+      margin: 20px 0;
+      color: #ffd700;
+    }
+
+    .timer.urgent {
+      color: #ff4444;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Results phase */
+    .results-container {
+      margin: 30px 0;
+    }
+
+    .result-card {
+      background: rgba(255,255,255,0.15);
+      padding: 30px;
+      margin: 20px 0;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      animation: reveal 0.5s ease;
+    }
+
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .result-role {
+      font-size: 2em;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .result-winner {
+      font-size: 3em;
+      margin: 20px 0;
+    }
+
+    .result-winner-avatar {
+      font-size: 5em;
+      display: inline-block;
+      margin-right: 20px;
+    }
+
+    .result-description {
+      font-size: 1.3em;
+      font-style: italic;
+      margin: 15px 0;
+      padding: 20px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+    }
+
+    .result-votes {
+      font-size: 1.2em;
+      color: #ffd700;
+    }
+
+    /* Summary phase */
+    .summary-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .summary-card {
+      background: rgba(255,255,255,0.15);
+      padding: 30px;
+      margin: 20px 0;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .summary-rank {
+      font-size: 4em;
+      font-weight: bold;
+      color: #ffd700;
+    }
+
+    .summary-avatar {
+      font-size: 5em;
+    }
+
+    .summary-info {
+      flex: 1;
+    }
+
+    .summary-name {
+      font-size: 2em;
+      font-weight: bold;
+    }
+
+    .summary-title {
+      font-size: 1.5em;
+      color: #ffd700;
+      font-style: italic;
+      margin: 10px 0;
+    }
+
+    .summary-roles {
+      font-size: 1.1em;
+      opacity: 0.9;
+      margin-top: 10px;
+    }
+
+    .summary-score {
+      font-size: 2.5em;
+      font-weight: bold;
+      color: #4CAF50;
+    }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: #ffd700;
+      position: absolute;
+      animation: confettiFall 3s linear infinite;
+    }
+
+    @keyframes confettiFall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .progress-text {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 20px 0;
+      padding: 15px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎭 Personality Sorter</h1>
+      <div class="room-code" id="roomCode">----</div>
+      <div class="phase-indicator" id="phaseIndicator">Setting up...</div>
+    </header>
+
+    <div id="lobbyPhase" class="hidden">
+      <div class="players-grid" id="playersGrid"></div>
+      <div style="text-align: center;">
+        <button class="btn" id="startBtn" onclick="startGame()">Start Game</button>
+      </div>
+    </div>
+
+    <div id="categoryPhase" class="hidden">
+      <h2 style="text-align: center; font-size: 2em; margin-bottom: 20px;">Vote for a Category!</h2>
+      <div class="vote-progress" id="voteProgress"></div>
+      <div class="categories-grid" id="categoriesGrid"></div>
+    </div>
+
+    <div id="assignPhase" class="hidden">
+      <h2 style="text-align: center; font-size: 2em; margin-bottom: 20px;" id="categoryTitle"></h2>
+      <div class="timer" id="timer">60</div>
+      <div class="progress-text" id="assignProgress"></div>
+      <div class="assignment-container" id="assignmentContainer"></div>
+    </div>
+
+    <div id="revealPhase" class="hidden">
+      <h2 style="text-align: center; font-size: 2.5em; margin-bottom: 30px;">🏆 Results</h2>
+      <div class="results-container" id="resultsContainer"></div>
+      <div style="text-align: center; margin-top: 30px;">
+        <button class="btn" onclick="nextRound()">Next Round</button>
+      </div>
+    </div>
+
+    <div id="summaryPhase" class="hidden">
+      <h2 style="text-align: center; font-size: 3em; margin-bottom: 30px;">🎊 Final Results</h2>
+      <div class="summary-container" id="summaryContainer"></div>
+      <div style="text-align: center; margin-top: 30px;">
+        <button class="btn" onclick="location.reload()">New Game</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="host.js"></script>
+</body>
+</html>

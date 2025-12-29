@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personality Sorter</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      text-align: center;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .btn {
+      width: 100%;
+      background: rgba(255,255,255,0.25);
+      border: none;
+      padding: 20px;
+      font-size: 1.3em;
+      color: white;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+      margin: 10px 0;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn:hover {
+      background: rgba(255,255,255,0.35);
+      transform: scale(1.02);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .input-group {
+      margin: 20px 0;
+    }
+
+    label {
+      display: block;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      text-transform: uppercase;
+    }
+
+    input::placeholder {
+      text-transform: none;
+      color: #999;
+    }
+
+    .emoji-picker {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .emoji-option {
+      font-size: 2.5em;
+      padding: 10px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .emoji-option:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.1);
+    }
+
+    .emoji-option.selected {
+      background: rgba(255,255,255,0.4);
+      border: 3px solid white;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.15);
+      padding: 30px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      margin: 20px 0;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .waiting-text {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 20px 0;
+    }
+
+    .spinner {
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Category voting */
+    .category-card {
+      background: rgba(255,255,255,0.2);
+      padding: 20px;
+      border-radius: 15px;
+      margin: 15px 0;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 3px solid transparent;
+    }
+
+    .category-card:active {
+      transform: scale(0.98);
+    }
+
+    .category-card.selected {
+      border-color: white;
+      background: rgba(255,255,255,0.35);
+    }
+
+    .category-name {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .category-roles {
+      font-size: 0.95em;
+      opacity: 0.9;
+    }
+
+    .category-role {
+      padding: 5px;
+      margin: 3px 0;
+      background: rgba(0,0,0,0.2);
+      border-radius: 5px;
+    }
+
+    /* Assignment phase */
+    .assignment-grid {
+      margin: 20px 0;
+    }
+
+    .role-card {
+      background: rgba(255,255,255,0.2);
+      padding: 20px;
+      border-radius: 15px;
+      margin: 15px 0;
+    }
+
+    .role-title {
+      font-size: 1.4em;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .role-description {
+      font-size: 1em;
+      opacity: 0.9;
+      margin-bottom: 15px;
+    }
+
+    .player-select {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 10px;
+    }
+
+    .player-option {
+      background: rgba(255,255,255,0.2);
+      padding: 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      border: 2px solid transparent;
+    }
+
+    .player-option:active {
+      transform: scale(0.95);
+    }
+
+    .player-option.selected {
+      background: rgba(255,255,255,0.4);
+      border-color: white;
+    }
+
+    .player-option-avatar {
+      font-size: 2.5em;
+      margin-bottom: 5px;
+    }
+
+    .player-option-name {
+      font-size: 0.9em;
+      word-break: break-word;
+    }
+
+    .timer {
+      font-size: 2em;
+      text-align: center;
+      margin: 15px 0;
+      color: #ffd700;
+      font-weight: bold;
+    }
+
+    .timer.urgent {
+      color: #ff4444;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Results */
+    .result-card {
+      background: rgba(255,255,255,0.2);
+      padding: 25px;
+      border-radius: 15px;
+      margin: 15px 0;
+      text-align: center;
+    }
+
+    .result-role {
+      font-size: 1.4em;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .result-winner {
+      font-size: 2.5em;
+      margin: 15px 0;
+    }
+
+    .result-description {
+      font-size: 1.1em;
+      font-style: italic;
+      opacity: 0.95;
+      margin: 10px 0;
+      padding: 15px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+    }
+
+    .score-display {
+      font-size: 1.8em;
+      color: #ffd700;
+      font-weight: bold;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .error-message {
+      background: rgba(255,0,0,0.3);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      border: 2px solid rgba(255,0,0,0.6);
+    }
+
+    .back-btn {
+      background: rgba(0,0,0,0.3);
+      padding: 10px 20px;
+      font-size: 1em;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Landing page -->
+    <div id="landingPage">
+      <h1>🎭 Personality Sorter</h1>
+      <button class="btn" onclick="showCreateRoom()">Create Room</button>
+      <button class="btn" onclick="showJoinRoom()">Join Room</button>
+    </div>
+
+    <!-- Create room -->
+    <div id="createRoomPage" class="hidden">
+      <button class="back-btn btn" onclick="showLanding()">← Back</button>
+      <h1>Create Room</h1>
+      <div class="card">
+        <div class="waiting-text">Creating room...</div>
+        <div class="spinner"></div>
+        <p style="text-align: center; margin-top: 20px; opacity: 0.8;">
+          You'll host on a laptop/tablet. Share the room code with players!
+        </p>
+      </div>
+    </div>
+
+    <!-- Join room -->
+    <div id="joinRoomPage" class="hidden">
+      <button class="back-btn btn" onclick="showLanding()">← Back</button>
+      <h1>Join Room</h1>
+      <div class="card">
+        <div class="input-group">
+          <label>Room Code</label>
+          <input type="text" id="roomCodeInput" placeholder="Enter 4-letter code" maxlength="4">
+        </div>
+        
+        <div class="input-group">
+          <label>Your Name</label>
+          <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20">
+        </div>
+        
+        <div class="input-group">
+          <label>Choose Avatar</label>
+          <div class="emoji-picker" id="emojiPicker">
+            <div class="emoji-option selected" data-emoji="😊">😊</div>
+            <div class="emoji-option" data-emoji="😎">😎</div>
+            <div class="emoji-option" data-emoji="🤓">🤓</div>
+            <div class="emoji-option" data-emoji="😜">😜</div>
+            <div class="emoji-option" data-emoji="🥳">🥳</div>
+            <div class="emoji-option" data-emoji="😇">😇</div>
+            <div class="emoji-option" data-emoji="🤠">🤠</div>
+            <div class="emoji-option" data-emoji="🥸">🥸</div>
+            <div class="emoji-option" data-emoji="🤡">🤡</div>
+            <div class="emoji-option" data-emoji="👻">👻</div>
+            <div class="emoji-option" data-emoji="👽">👽</div>
+            <div class="emoji-option" data-emoji="🤖">🤖</div>
+          </div>
+        </div>
+
+        <div id="joinError" class="error-message hidden"></div>
+        
+        <button class="btn" id="joinBtn" onclick="joinRoom()">Join Game</button>
+      </div>
+    </div>
+
+    <!-- Waiting lobby -->
+    <div id="waitingPage" class="hidden">
+      <h1>Waiting...</h1>
+      <div class="card">
+        <div class="waiting-text">Waiting for host to start game</div>
+        <div class="spinner"></div>
+        <div id="playerCount" style="text-align: center; font-size: 1.2em; margin-top: 20px;"></div>
+      </div>
+    </div>
+
+    <!-- Category voting -->
+    <div id="categoryPage" class="hidden">
+      <h1>Vote for Category!</h1>
+      <div id="categoriesContainer"></div>
+    </div>
+
+    <!-- Assignment phase -->
+    <div id="assignmentPage" class="hidden">
+      <h1 id="assignmentTitle">Assign Roles</h1>
+      <div class="timer" id="timer">60</div>
+      <div id="assignmentGrid" class="assignment-grid"></div>
+      <button class="btn" id="submitBtn" onclick="submitAssignments()">Submit Assignments</button>
+    </div>
+
+    <!-- Waiting for results -->
+    <div id="waitingResultsPage" class="hidden">
+      <h1>Results Coming!</h1>
+      <div class="card">
+        <div class="waiting-text">Calculating results...</div>
+        <div class="spinner"></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="resultsPage" class="hidden">
+      <h1>🏆 Results</h1>
+      <div class="score-display" id="scoreDisplay">Your Score: 0</div>
+      <div id="resultsContainer"></div>
+      <div class="card">
+        <div class="waiting-text">Waiting for next round...</div>
+      </div>
+    </div>
+
+    <!-- Final summary -->
+    <div id="summaryPage" class="hidden">
+      <h1>🎊 Game Over</h1>
+      <div class="card">
+        <h2 style="text-align: center; margin-bottom: 20px;" id="finalTitle"></h2>
+        <div class="score-display" id="finalScore"></div>
+        <div id="finalRoles" style="text-align: center; font-size: 1.2em; margin-top: 15px;"></div>
+      </div>
+      <button class="btn" onclick="location.href='/'">Play Again</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="controller.js"></script>
+</body>
+</html>
