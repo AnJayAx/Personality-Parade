@@ -1,6 +1,22 @@
-const socket = io();
+const socket = io({
+  transports: ['polling', 'websocket'],
+  reconnection: true,
+  reconnectionDelay: 1000,
+  reconnectionAttempts: 5
+});
 
 let roomId = null;
+
+// Connection status handling
+socket.on('connect', () => {
+  console.log('Host connected:', socket.id);
+});
+
+socket.on('connect_error', (error) => {
+  console.error('Connection error:', error);
+  updatePhaseIndicator('Connection error - please refresh');
+});
+
 let players = [];
 let currentCategory = null;
 let timerInterval = null;

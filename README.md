@@ -86,9 +86,23 @@ AI generates:
 
 ## 🌐 Deploy to Vercel
 
-### Option 1: Vercel CLI
+### ⚠️ Important: Vercel Limitations
 
-```bash
+**Vercel's serverless architecture has limitations with Socket.IO WebSocket connections.** For production use, consider these alternatives:
+
+**Recommended hosting platforms:**
+- **Railway** (https://railway.app) - Best for Socket.IO apps
+- **Render** (https://render.com) - Great free tier
+- **Heroku** - Classic choice for Node.js apps
+- **DigitalOcean App Platform** - Reliable and affordable
+
+These platforms support persistent WebSocket connections needed for real-time multiplayer.
+
+### Deploy to Vercel (with polling fallback)
+
+If you still want to use Vercel, the app will use HTTP polling as a fallback (slower but works):
+
+**Option 1: Vercel CLI**
 # Install Vercel CLI
 npm i -g vercel
 

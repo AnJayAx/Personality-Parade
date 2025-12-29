@@ -1,6 +1,29 @@
-const socket = io();
+const socket = io({
+  transports: ['polling', 'websocket'],
+  reconnection: true,
+  reconnectionDelay: 1000,
+  reconnectionAttempts: 5
+});
 
 let roomId = null;
+let connectionReady = false;
+
+// Connection status handling
+socket.on('connect', () => {
+  console.log('Connected to server:', socket.id);
+  connectionReady = true;
+});
+
+socket.on('connect_error', (error) => {
+  console.error('Connection error:', error);
+  alert('Unable to connect to server. Please refresh and try again.');
+});
+
+socket.on('disconnect', () => {
+  console.log('Disconnected from server');
+  connectionReady = false;
+});
+
 let playerData = null;
 let selectedAvatar = '😊';
 let currentCategory = null;
@@ -107,6 +130,10 @@ function showLanding() {
 }
 
 function showCreateRoom() {
+  if (!socket.connected) {
+    alert('Connecting to server... Please wait a moment and try again.');
+    return;
+  }
   showPage('createRoomPage');
   socket.emit('createRoom');
 }
