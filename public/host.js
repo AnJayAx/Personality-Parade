@@ -29,9 +29,13 @@ if (!roomId || roomId === 'host') {
   // Create new room
   socket.emit('createRoom');
 } else {
-  // Join existing room as host
+  // Existing room - show code and wait for data
   document.getElementById('roomCode').textContent = roomId;
+  updatePhaseIndicator('Waiting for players to join...');
   showPhase('lobby');
+  
+  // Request room state from server (in case of refresh)
+  socket.emit('getRoomState', { roomId });
 }
 
 // Socket event listeners
