@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Socket.IO</title>
+</head>
+<body>
+  <h1>Socket.IO Connection Test</h1>
+  <div id="status">Connecting...</div>
+  <button id="testBtn" onclick="testCreateRoom()">Test Create Room</button>
+  <div id="output"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io({
+      transports: ['polling', 'websocket'],
+      reconnection: true
+    });
+
+    const statusEl = document.getElementById('status');
+    const outputEl = document.getElementById('output');
+
+    socket.on('connect', () => {
+      statusEl.textContent = 'Connected! Socket ID: ' + socket.id;
+      statusEl.style.color = 'green';
+      console.log('Connected:', socket.id);
+    });
+
+    socket.on('connect_error', (error) => {
+      statusEl.textContent = 'Connection Error: ' + error.message;
+      statusEl.style.color = 'red';
+      console.error('Connection error:', error);
+    });
+
+    socket.on('roomCreated', ({ roomId }) => {
+      outputEl.innerHTML = '<p style="color: green;">Room created: ' + roomId + '</p>';
+      console.log('Room created:', roomId);
+    });
+
+    function testCreateRoom() {
+      console.log('Creating room...');
+      socket.emit('createRoom');
+      outputEl.innerHTML = '<p>Creating room...</p>';
+    }
+
+    window.socket = socket; // For console debugging
+  </script>
+</body>
+</html>

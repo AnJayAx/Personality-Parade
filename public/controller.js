@@ -1,9 +1,19 @@
+// Check if Socket.IO is loaded
+if (typeof io === 'undefined') {
+  console.error('Socket.IO client library not loaded!');
+  alert('Error: Unable to load required libraries. Please refresh the page.');
+}
+
 const socket = io({
   transports: ['polling', 'websocket'],
   reconnection: true,
   reconnectionDelay: 1000,
   reconnectionAttempts: 5
 });
+
+console.log('=== Controller.js loaded ===');
+console.log('Socket.IO initialized');
+console.log('Current path:', window.location.pathname);
 
 let roomId = null;
 let connectionReady = false;
@@ -12,16 +22,18 @@ let connectionReady = false;
 socket.on('connect', () => {
   console.log('Connected to server:', socket.id);
   connectionReady = true;
+  updateConnectionStatus('✓ Connected', 'green');
 });
 
 socket.on('connect_error', (error) => {
   console.error('Connection error:', error);
-  alert('Unable to connect to server. Please refresh and try again.');
+  updateConnectionStatus('✗ Connection failed', 'red');
 });
 
 socket.on('disconnect', () => {
   console.log('Disconnected from server');
   connectionReady = false;
+  updateConnectionStatus('Disconnected', 'orange');
 });
 
 let playerData = null;
@@ -30,19 +42,28 @@ let currentCategory = null;
 let assignments = {};
 let timerInterval = null;
 
-// Check if we're on host path
-if (window.location.pathname.startsWith('/host')) {
-  // This is a host screen, controller.js shouldn't run here
-} else {
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if we're on host path
+  if (window.location.pathname.startsWith('/host')) {
+    // This is a host screen, controller.js shouldn't run here
+    return;
+  }
+  
   // Initialize emoji picker
-  document.querySelectorAll('.emoji-option').forEach(option => {
-    option.addEventListener('click', () => {
-      document.querySelectorAll('.emoji-option').forEach(o => o.classList.remove('selected'));
-      option.classList.add('selected');
-      selectedAvatar = option.dataset.emoji;
+  const emojiOptions = document.querySelectorAll('.emoji-option');
+  if (emojiOptions.length > 0) {
+    emojiOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        document.querySelectorAll('.emoji-option').forEach(o => o.classList.remove('selected'));
+        option.classList.add('selected');
+        selectedAvatar = option.dataset.emoji;
+      });
     });
-  });
-}
+  }
+  
+  console.log('Controller initialized');
+});
 
 // Socket event listeners
 socket.on('roomCreated', ({ roomId: newRoomId }) => {
@@ -113,6 +134,14 @@ socket.on('error', ({ message }) => {
 });
 
 // Navigation functions
+function updateConnectionStatus(text, color) {
+  const statusEl = document.getElementById('statusText');
+  if (statusEl) {
+    statusEl.textContent = text;
+    statusEl.style.color = color;
+  }
+}
+
 function showPage(pageId) {
   ['landingPage', 'createRoomPage', 'joinRoomPage', 'waitingPage', 
    'categoryPage', 'assignmentPage', 'waitingResultsPage', 'resultsPage', 'summaryPage']
@@ -130,17 +159,39 @@ function showLanding() {
 }
 
 function showCreateRoom() {
+  console.log('showCreateRoom called, socket.connected:', socket.connected);
+  
   if (!socket.connected) {
-    alert('Connecting to server... Please wait a moment and try again.');
+    // Try to wait for connection
+    showPage('createRoomPage');
+    let attempts = 0;
+    const waitForConnection = setInterval(() => {
+      attempts++;
+      if (socket.connected) {
+        clearInterval(waitForConnection);
+        console.log('Connected! Creating room...');
+        socket.emit('createRoom');
+      } else if (attempts > 10) {
+        clearInterval(waitForConnection);
+        alert('Unable to connect to server. Please check your internet connection and try again.');
+        showPage('landingPage');
+      }
+    }, 500);
     return;
   }
+  
+  console.log('Showing create room page and emitting createRoom event');
   showPage('createRoomPage');
   socket.emit('createRoom');
 }
 
 function showJoinRoom() {
+  console.log('showJoinRoom called');
   showPage('joinRoomPage');
-  document.getElementById('joinError').classList.add('hidden');
+  const errorEl = document.getElementById('joinError');
+  if (errorEl) {
+    errorEl.classList.add('hidden');
+  }
 }
 
 function joinRoom() {
