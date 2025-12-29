@@ -26,16 +26,18 @@ const pathParts = window.location.pathname.split('/');
 roomId = pathParts[pathParts.length - 1];
 
 if (!roomId || roomId === 'host') {
-  // Create new room
+  // No room ID - create new room
   updatePhaseIndicator('Creating room...');
   socket.emit('createRoom');
 } else {
-  // Direct link to host page - this shouldn't normally happen
-  // Redirect back to home to create a proper room
-  updatePhaseIndicator('Invalid room - redirecting...');
-  setTimeout(() => {
-    window.location.href = '/';
-  }, 2000);
+  // Has room ID from URL (redirected from controller) - set it up
+  console.log('Host page loaded with room:', roomId);
+  document.getElementById('roomCode').textContent = roomId;
+  showPhase('lobby');
+  updatePhaseIndicator('Waiting for players to join...');
+  players = [];
+  updatePlayersGrid();
+  updateStartButton();
 }
 
 // Socket event listeners
