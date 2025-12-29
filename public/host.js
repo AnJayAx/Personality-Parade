@@ -27,15 +27,15 @@ roomId = pathParts[pathParts.length - 1];
 
 if (!roomId || roomId === 'host') {
   // Create new room
+  updatePhaseIndicator('Creating room...');
   socket.emit('createRoom');
 } else {
-  // Existing room - show code and wait for data
-  document.getElementById('roomCode').textContent = roomId;
-  updatePhaseIndicator('Waiting for players to join...');
-  showPhase('lobby');
-  
-  // Request room state from server (in case of refresh)
-  socket.emit('getRoomState', { roomId });
+  // Direct link to host page - this shouldn't normally happen
+  // Redirect back to home to create a proper room
+  updatePhaseIndicator('Invalid room - redirecting...');
+  setTimeout(() => {
+    window.location.href = '/';
+  }, 2000);
 }
 
 // Socket event listeners
@@ -47,7 +47,10 @@ socket.on('roomCreated', ({ roomId: newRoomId }) => {
   window.history.pushState({}, '', `/host/${roomId}`);
   
   showPhase('lobby');
-  updatePhaseIndicator('Waiting for players...');
+  updatePhaseIndicator('Waiting for players to join...');
+  players = []; // Initialize empty player list
+  updatePlayersGrid();
+  updateStartButton();
 });
 
 socket.on('playerJoined', ({ player, players: allPlayers }) => {
