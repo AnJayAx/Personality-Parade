@@ -179,6 +179,41 @@ io.on('connection', (socket) => {
     console.log('Room created:', roomId);
   });
 
+  // Rejoin as host (when redirected from controller page)
+  socket.on('rejoinAsHost', ({ roomId: requestedRoomId }) => {
+    let room = rooms.get(requestedRoomId);
+    
+    if (!room) {
+      // Room doesn't exist, create it with this room ID
+      console.log('Room not found, creating:', requestedRoomId);
+      room = {
+        roomId: requestedRoomId,
+        hostId: socket.id,
+        players: [],
+        currentPhase: 'lobby',
+        currentCategory: null,
+        categoryOptions: [],
+        categoryVotes: {},
+        assignments: {},
+        results: {},
+        currentRound: 0,
+        totalRounds: 4,
+        timer: null
+      };
+      rooms.set(requestedRoomId, room);
+    } else {
+      // Room exists, update host ID
+      console.log('Updating host for room:', requestedRoomId);
+      room.hostId = socket.id;
+    }
+    
+    socket.join(requestedRoomId);
+    socket.emit('hostJoined', { 
+      roomId: requestedRoomId,
+      players: room.players 
+    });
+  });
+
   // Join room
   socket.on('joinRoom', ({ roomId, name, avatar }) => {
     const room = rooms.get(roomId.toUpperCase());

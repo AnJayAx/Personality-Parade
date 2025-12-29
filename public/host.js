@@ -30,14 +30,14 @@ if (!roomId || roomId === 'host') {
   updatePhaseIndicator('Creating room...');
   socket.emit('createRoom');
 } else {
-  // Has room ID from URL (redirected from controller) - set it up
+  // Has room ID from URL (redirected from controller)
+  // Need to verify room exists or recreate it
   console.log('Host page loaded with room:', roomId);
   document.getElementById('roomCode').textContent = roomId;
-  showPhase('lobby');
-  updatePhaseIndicator('Waiting for players to join...');
-  players = [];
-  updatePlayersGrid();
-  updateStartButton();
+  updatePhaseIndicator('Connecting to room...');
+  
+  // Tell server this socket is now the host for this room
+  socket.emit('rejoinAsHost', { roomId });
 }
 
 // Socket event listeners
@@ -51,6 +51,15 @@ socket.on('roomCreated', ({ roomId: newRoomId }) => {
   showPhase('lobby');
   updatePhaseIndicator('Waiting for players to join...');
   players = []; // Initialize empty player list
+  updatePlayersGrid();
+  updateStartButton();
+});
+
+socket.on('hostJoined', ({ roomId: joinedRoomId, players: roomPlayers }) => {
+  roomId = joinedRoomId;
+  players = roomPlayers;
+  showPhase('lobby');
+  updatePhaseIndicator('Waiting for players to join...');
   updatePlayersGrid();
   updateStartButton();
 });
