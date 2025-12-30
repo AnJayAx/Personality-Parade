@@ -293,14 +293,14 @@ io.on('connection', (socket) => {
 
     room.categoryVotes[socket.id] = categoryIndex;
 
+    // Count votes for progress update
+    const counts = {};
+    Object.values(room.categoryVotes).forEach(idx => {
+      counts[idx] = (counts[idx] || 0) + 1;
+    });
+
     // Check if all players voted
     if (Object.keys(room.categoryVotes).length === room.players.length) {
-      // Count votes
-      const counts = {};
-      Object.values(room.categoryVotes).forEach(idx => {
-        counts[idx] = (counts[idx] || 0) + 1;
-      });
-
       // Find winner
       const winnerIndex = parseInt(Object.keys(counts).reduce((a, b) => 
         counts[a] > counts[b] ? a : b
@@ -325,7 +325,8 @@ io.on('connection', (socket) => {
     } else {
       io.to(roomId).emit('categoryVoteUpdate', {
         voted: Object.keys(room.categoryVotes).length,
-        total: room.players.length
+        total: room.players.length,
+        voteCounts: counts
       });
     }
   });

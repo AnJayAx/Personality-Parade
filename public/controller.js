@@ -40,6 +40,7 @@ let playerData = null;
 let selectedAvatar = '😊';
 let currentCategory = null;
 let assignments = {};
+let assignedPlayers = new Set(); // Track which players are already assigned
 let timerInterval = null;
 
 // Wait for DOM to be ready
@@ -420,6 +421,7 @@ function showAssignmentPageEnhanced() {
   document.getElementById('assignmentTitle').textContent = currentCategory.name;
   
   assignments = {};
+  assignedPlayers = new Set(); // Reset
   
   // Start timer
   let timeLeft = 60;
@@ -448,7 +450,7 @@ function showAssignmentPageEnhanced() {
       <div class="role-description">${role.desc}</div>
       <div class="player-select" id="role-${role.id}">
         ${allPlayers.map(p => `
-          <div class="player-option" onclick="selectPlayerEnhanced(this, ${role.id}, '${p.id}')">
+          <div class="player-option" onclick="selectPlayerEnhanced(this, ${role.id}, '${p.id}')" data-player-id="${p.id}">
             <div class="player-option-avatar">${p.avatar}</div>
             <div class="player-option-name">${p.name}</div>
           </div>
@@ -461,12 +463,59 @@ function showAssignmentPageEnhanced() {
 function selectPlayerEnhanced(element, roleId, playerId) {
   const container = element.closest('.player-select');
   
+  // Check if player is already assigned to another role
+  if (assignedPlayers.has(playerId) && assignments[playerId] !== roleId) {
+    // Player already assigned elsewhere, show feedback
+    element.style.animation = 'shake 0.3s';
+    setTimeout(() => {
+      element.style.animation = '';
+    }, 300);
+    return;
+  }
+  
+  // Remove previous assignment for this player if any
+  if (assignments[playerId]) {
+    const oldRoleId = assignments[playerId];
+    delete assignments[playerId];
+    assignedPlayers.delete(playerId);
+    
+    // Update UI for old role
+    const oldContainer = document.getElementById(`role-${oldRoleId}`);
+    if (oldContainer) {
+      oldContainer.querySelectorAll('.player-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+    }
+  }
+  
   // Deselect others in this role
   container.querySelectorAll('.player-option').forEach(opt => {
+    const optPlayerId = opt.getAttribute('data-player-id');
+    if (optPlayerId && assignments[optPlayerId] === roleId) {
+      delete assignments[optPlayerId];
+      assignedPlayers.delete(optPlayerId);
+    }
     opt.classList.remove('selected');
   });
   
   // Select this one
   element.classList.add('selected');
   assignments[playerId] = roleId;
+  assignedPlayers.add(playerId);
+  
+  // Update all player options to show which are unavailable
+  updatePlayerOptionsAvailability();
+}
+
+function updatePlayerOptionsAvailability() {
+  document.querySelectorAll('.player-option').forEach(opt => {
+    const playerId = opt.getAttribute('data-player-id');
+    if (playerId && assignedPlayers.has(playerId) && !opt.classList.contains('selected')) {
+      opt.style.opacity = '0.3';
+      opt.style.pointerEvents = 'none';
+    } else if (playerId) {
+      opt.style.opacity = '1';
+      opt.style.pointerEvents = 'auto';
+    }
+  });
 }

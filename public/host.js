@@ -102,9 +102,19 @@ socket.on('gameStarted', ({ phase, categoryOptions, round }) => {
   showCategoryVoting(categoryOptions);
 });
 
-socket.on('categoryVoteUpdate', ({ voted, total }) => {
+socket.on('categoryVoteUpdate', ({ voted, total, voteCounts }) => {
   document.getElementById('voteProgress').textContent = 
     `Votes: ${voted}/${total} players`;
+  
+  // Update vote counts on category cards
+  if (voteCounts) {
+    Object.entries(voteCounts).forEach(([idx, count]) => {
+      const voteEl = document.getElementById(`votes-${idx}`);
+      if (voteEl) {
+        voteEl.textContent = `${count} vote${count !== 1 ? 's' : ''}`;
+      }
+    });
+  }
 });
 
 socket.on('categorySelected', ({ category, phase }) => {
@@ -180,31 +190,25 @@ function startGame() {
 
 function showCategoryVoting(categories) {
   showPhase('category');
-  updatePhaseIndicator('Vote for a category!');
+  updatePhaseIndicator('Players are voting on categories...');
   
   const grid = document.getElementById('categoriesGrid');
+  // Host just displays categories, no voting
   grid.innerHTML = categories.map((cat, idx) => `
-    <div class="category-card" onclick="voteCategory(${idx})">
+    <div class="category-card" style="cursor: default; opacity: 0.9;">
       <div class="category-name">${cat.name}</div>
       <div class="category-roles">
         ${cat.roles.map(r => `
           <div class="category-role">${r.label}</div>
         `).join('')}
       </div>
+      <div style="margin-top: 10px; font-size: 1.2em; color: #ffd700;">
+        <span id="votes-${idx}">0 votes</span>
+      </div>
     </div>
   `).join('');
   
-  document.getElementById('voteProgress').textContent = 'Waiting for votes...';
-}
-
-function voteCategory(index) {
-  socket.emit('voteCategory', { roomId, categoryIndex: index });
-  
-  // Disable further voting
-  document.querySelectorAll('.category-card').forEach(card => {
-    card.style.opacity = '0.5';
-    card.style.pointerEvents = 'none';
-  });
+  document.getElementById('voteProgress').textContent = 'Waiting for player votes...';
 }
 
 function showAssignmentPhase() {
