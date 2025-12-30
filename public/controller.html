@@ -14,7 +14,7 @@
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #f5deb3 0%, #d2b48c 50%, #e0c097 100%);
       min-height: 100vh;
       color: white;
       padding: 20px;
@@ -33,26 +33,28 @@
       font-size: 2.5em;
       text-align: center;
       margin-bottom: 30px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      color: #4a2511;
+      text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
     }
 
     .btn {
       width: 100%;
-      background: rgba(255,255,255,0.25);
+      background: rgba(139,69,19,0.3);
       border: none;
       padding: 20px;
       font-size: 1.3em;
-      color: white;
+      color: #4a2511;
       border-radius: 15px;
       cursor: pointer;
       transition: all 0.3s;
       font-weight: bold;
       margin: 10px 0;
       backdrop-filter: blur(10px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
 
     .btn:hover {
-      background: rgba(255,255,255,0.35);
+      background: rgba(139,69,19,0.5);
       transform: scale(1.02);
     }
 
@@ -75,6 +77,8 @@
       font-size: 1.2em;
       margin-bottom: 10px;
       font-weight: bold;
+      color: #4a2511;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
     }
 
     input {
@@ -163,13 +167,14 @@
 
     /* Category voting */
     .category-card {
-      background: rgba(255,255,255,0.2);
+      background: rgba(139,69,19,0.2);
       padding: 20px;
       border-radius: 15px;
       margin: 15px 0;
       cursor: pointer;
       transition: all 0.3s;
       border: 3px solid transparent;
+      color: #4a2511;
     }
 
     .category-card:active {
@@ -205,10 +210,11 @@
     }
 
     .role-card {
-      background: rgba(255,255,255,0.2);
+      background: rgba(139,69,19,0.2);
       padding: 20px;
       border-radius: 15px;
       margin: 15px 0;
+      color: #4a2511;
     }
 
     .role-title {
@@ -230,13 +236,14 @@
     }
 
     .player-option {
-      background: rgba(255,255,255,0.2);
-      padding: 15px;
+      background: rgba(139,69,19,0.2);
+      padding: 10px;
       border-radius: 10px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s;
       text-align: center;
       border: 2px solid transparent;
+      color: #4a2511;
     }
 
     .player-option:active {
@@ -244,8 +251,9 @@
     }
 
     .player-option.selected {
-      background: rgba(255,255,255,0.4);
-      border-color: white;
+      background: rgba(139,69,19,0.5);
+      border-color: #8b4513;
+      box-shadow: 0 2px 8px rgba(139,69,19,0.4);
     }
 
     .player-option-avatar {

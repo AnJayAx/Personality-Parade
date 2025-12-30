@@ -362,7 +362,8 @@ function selectPlayer(element, roleId, playerId) {
 function submitAssignments() {
   clearInterval(timerInterval);
   
-  // Convert assignments to server format: { playerId: roleId }
+  // Assignments are already in correct format: { roleId: playerId }
+  // But server expects { playerId: roleId }
   const serverAssignments = {};
   Object.entries(assignments).forEach(([roleId, playerId]) => {
     serverAssignments[playerId] = parseInt(roleId);
