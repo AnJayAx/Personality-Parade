@@ -34,7 +34,11 @@ const PREDEFINED_CATEGORIES = [
       { id: 3, label: "Swimming Pro", desc: "Like a fish in water" },
       { id: 4, label: "Esports Legend", desc: "Digital athlete extraordinaire" },
       { id: 5, label: "Marathon Runner", desc: "Never stops moving" },
-      { id: 6, label: "Yoga Master", desc: "Zen flexibility goals" }
+      { id: 6, label: "Yoga Master", desc: "Zen flexibility goals" },
+      { id: 7, label: "Basketball MVP", desc: "Hoops champion" },
+      { id: 8, label: "Tennis Pro", desc: "Serve and volley expert" },
+      { id: 9, label: "Gym Rat", desc: "Gains for days" },
+      { id: 10, label: "Dance Floor King", desc: "Moves like Jagger" }
     ]
   },
   {
@@ -44,7 +48,12 @@ const PREDEFINED_CATEGORIES = [
       { id: 2, label: "Chill One", desc: "Stress? Never heard of it" },
       { id: 3, label: "Blur Sotong", desc: "Lost but lovable" },
       { id: 4, label: "The Boss", desc: "Natural leader vibes" },
-      { id: 5, label: "Office Gossip", desc: "Knows everything about everyone" }
+      { id: 5, label: "Office Gossip", desc: "Knows everything about everyone" },
+      { id: 6, label: "Coffee Addict", desc: "Runs on caffeine" },
+      { id: 7, label: "Meeting Hater", desc: "Could've been an email" },
+      { id: 8, label: "Tech Support", desc: "Have you tried turning it off?" },
+      { id: 9, label: "Snack Bringer", desc: "Always has food" },
+      { id: 10, label: "Early Bird", desc: "First in, first out" }
     ]
   },
   {
@@ -54,7 +63,12 @@ const PREDEFINED_CATEGORIES = [
       { id: 2, label: "Fine Dining Snob", desc: "Michelin or nothing" },
       { id: 3, label: "Instant Noodles King", desc: "Maggi Mee master" },
       { id: 4, label: "Spicy Slayer", desc: "Extra chili please" },
-      { id: 5, label: "Dessert First", desc: "Life's too short" }
+      { id: 5, label: "Dessert First", desc: "Life's too short" },
+      { id: 6, label: "Bubble Tea Addict", desc: "100% sugar level" },
+      { id: 7, label: "Picky Eater", desc: "No vegetables please" },
+      { id: 8, label: "Buffet Champion", desc: "Money's worth warrior" },
+      { id: 9, label: "Street Food Explorer", desc: "Will try anything once" },
+      { id: 10, label: "Home Cook Master", desc: "Why eat out?" }
     ]
   },
   {
@@ -306,10 +320,23 @@ io.on('connection', (socket) => {
         counts[a] > counts[b] ? a : b
       ));
 
-      room.currentCategory = room.categoryOptions[winnerIndex];
+      const selectedCategory = room.categoryOptions[winnerIndex];
+      
+      // Filter roles to match player count (use number of players as number of roles)
+      const playerCount = room.players.length;
+      const filteredRoles = selectedCategory.roles.slice(0, playerCount).map((role, idx) => ({
+        ...role,
+        id: idx + 1 // Renumber IDs
+      }));
+      
+      room.currentCategory = {
+        name: selectedCategory.name,
+        roles: filteredRoles
+      };
       room.currentPhase = 'assign';
       room.assignments = {};
       room.categoryVotes = {};
+      room.currentRoleIndex = 0; // Track which role result to show
 
       io.to(roomId).emit('categorySelected', {
         category: room.currentCategory,
@@ -371,6 +398,33 @@ io.on('connection', (socket) => {
         phase: 'category',
         categoryOptions: room.categoryOptions,
         round: room.currentRound + 1
+      });
+    }
+  });
+
+  // Next result (show next role's winner)
+  socket.on('nextResult', ({ roomId }) => {
+    const room = rooms.get(roomId);
+    if (!room || room.hostId !== socket.id) return;
+
+    room.currentRoleIndex++;
+
+    if (room.currentRoleIndex >= room.currentCategory.roles.length) {
+      // All results shown, go to round summary or next round
+      io.to(roomId).emit('roundComplete', {
+        players: room.players,
+        results: room.results
+      });
+    } else {
+      // Show next result
+      const roleId = room.currentCategory.roles[room.currentRoleIndex].id;
+      const result = room.results[roleId];
+      
+      io.to(roomId).emit('showSingleResult', {
+        result,
+        currentIndex: room.currentRoleIndex,
+        totalRoles: room.currentCategory.roles.length,
+        players: room.players
       });
     }
   });
@@ -454,9 +508,16 @@ async function calculateResults(roomId) {
 
   room.results = results;
   room.currentPhase = 'reveal';
+  room.currentRoleIndex = 0; // Start with first result
 
-  io.to(roomId).emit('resultsReady', {
-    results,
+  // Send first result only
+  const firstRoleId = room.currentCategory.roles[0].id;
+  const firstResult = results[firstRoleId];
+  
+  io.to(roomId).emit('showSingleResult', {
+    result: firstResult,
+    currentIndex: 0,
+    totalRoles: room.currentCategory.roles.length,
     players: room.players,
     phase: 'reveal'
   });

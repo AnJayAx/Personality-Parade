@@ -117,6 +117,24 @@ socket.on('assignmentProgress', ({ submitted, total }) => {
   // Could show who's submitted
 });
 
+socket.on('showSingleResult', ({ result, currentIndex, totalRoles, players }) => {
+  // Update own score
+  const me = players.find(p => p.id === socket.id);
+  if (me) {
+    playerData.score = me.score;
+    playerData.earnedRoles = me.earnedRoles;
+  }
+  showSingleResult(result, currentIndex, totalRoles);
+});
+
+socket.on('roundComplete', ({ players, results }) => {
+  const me = players.find(p => p.id === socket.id);
+  if (me) {
+    playerData = me;
+  }
+  showRoundComplete(results);
+});
+
 socket.on('resultsReady', ({ results, players }) => {
   // Update own score
   const me = players.find(p => p.id === socket.id);
@@ -359,7 +377,68 @@ function submitAssignments() {
   showPage('waitingResultsPage');
 }
 
-// Results
+// Results - show one at a time
+function showSingleResult(result, currentIndex, totalRoles) {
+  clearInterval(timerInterval);
+  showPage('resultsPage');
+  
+  console.log('Showing single result:', result);
+  
+  document.getElementById('scoreDisplay').textContent = 
+    `Your Score: ${playerData ? playerData.score : 0} pts`;
+  
+  const container = document.getElementById('resultsContainer');
+  container.innerHTML = `
+    <div class="result-card">
+      <div style="text-align: center; font-size: 1.5em; margin-bottom: 20px; color: #ffd700;">
+        Result ${currentIndex + 1} of ${totalRoles}
+      </div>
+      <div class="result-role">🏆 ${result.roleLabel}</div>
+      <div class="result-winner">
+        ${result.winnerAvatar} ${result.winnerName}
+      </div>
+      ${result.winnerId === socket.id ? 
+        '<div style="font-size: 1.5em; color: #ffd700;">🎉 That\'s you!</div>' : 
+        ''}
+      <div class="result-description">${result.description || 'Amazing performance!'}</div>
+      <div style="margin-top: 10px; color: #ffd700;">${result.votes} vote${result.votes !== 1 ? 's' : ''}</div>
+    </div>
+    <div style="text-align: center; margin-top: 20px; opacity: 0.8;">
+      Waiting for next result...
+    </div>
+  `;
+}
+
+function showRoundComplete(results) {
+  showPage('resultsPage');
+  
+  document.getElementById('scoreDisplay').textContent = 
+    `Your Score: ${playerData ? playerData.score : 0} pts`;
+  
+  const container = document.getElementById('resultsContainer');
+  container.innerHTML = `
+    <h2 style="text-align: center; font-size: 2em; margin-bottom: 20px;">🏆 Round Complete!</h2>
+    <div style="text-align: center; margin-bottom: 30px;">
+      ${playerData.earnedRoles.length > 0 ? 
+        `<div style="font-size: 1.5em; color: #ffd700; margin: 20px 0;">You won: ${playerData.earnedRoles[playerData.earnedRoles.length - 1]}!</div>` :
+        '<div style="font-size: 1.2em; opacity: 0.8;">Better luck next round!</div>'
+      }
+    </div>
+    ${Object.values(results).map(result => `
+      <div style="background: rgba(255,255,255,0.15); padding: 15px; margin: 10px 0; border-radius: 10px; display: flex; align-items: center; gap: 15px;">
+        <div style="font-size: 2em;">${result.winnerAvatar}</div>
+        <div style="flex: 1;">
+          <div style="font-size: 1.2em; font-weight: bold;">${result.winnerName}</div>
+          <div style="opacity: 0.9;">${result.roleLabel}</div>
+        </div>
+      </div>
+    `).join('')}
+    <div style="text-align: center; margin-top: 30px; opacity: 0.8;">
+      Waiting for next round...
+    </div>
+  `;
+}
+
 function showResults(results) {
   clearInterval(timerInterval);
   showPage('resultsPage');

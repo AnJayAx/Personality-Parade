@@ -127,6 +127,16 @@ socket.on('assignmentProgress', ({ submitted, total }) => {
     `Assignments: ${submitted}/${total} players submitted`;
 });
 
+socket.on('showSingleResult', ({ result, currentIndex, totalRoles, players: allPlayers }) => {
+  players = allPlayers;
+  showSingleResult(result, currentIndex, totalRoles);
+});
+
+socket.on('roundComplete', ({ players: allPlayers, results }) => {
+  players = allPlayers;
+  showRoundComplete(results);
+});
+
 socket.on('resultsReady', ({ results, players: allPlayers }) => {
   players = allPlayers;
   showResults(results);
@@ -248,6 +258,68 @@ function showAssignmentPhase() {
       </div>
     </div>
   `).join('');
+}
+
+function showSingleResult(result, currentIndex, totalRoles) {
+  clearInterval(timerInterval);
+  showPhase('reveal');
+  updatePhaseIndicator(`Result ${currentIndex + 1} of ${totalRoles}`);
+  
+  const container = document.getElementById('resultsContainer');
+  
+  // Create confetti for winner
+  createConfetti();
+  
+  container.innerHTML = `
+    <div class="result-card">
+      <div class="result-role">🏆 ${result.roleLabel}</div>
+      <div class="result-winner">
+        <span class="result-winner-avatar">${result.winnerAvatar}</span>
+        <span>${result.winnerName}</span>
+      </div>
+      <div class="result-description">${result.description}</div>
+      <div class="result-votes">${result.votes} votes</div>
+    </div>
+  `;
+  
+  // Update player scores in grid
+  updatePlayersGrid();
+  
+  // Show next button
+  const buttonText = currentIndex + 1 < totalRoles ? 'Next Result →' : 'Round Complete';
+  document.querySelector('#revealPhase > div:last-child').innerHTML = `
+    <button class="btn" onclick="nextResult()" style="font-size: 1.5em; padding: 20px 50px;">${buttonText}</button>
+  `;
+}
+
+function nextResult() {
+  socket.emit('nextResult', { roomId });
+}
+
+function showRoundComplete(results) {
+  showPhase('reveal');
+  updatePhaseIndicator('🏆 Round Complete!');
+  
+  const container = document.getElementById('resultsContainer');
+  container.innerHTML = `
+    <h2 style="text-align: center; font-size: 2.5em; margin-bottom: 30px;">Round Winners</h2>
+    ${Object.values(results).map(result => `
+      <div style="background: rgba(255,255,255,0.15); padding: 20px; margin: 10px 0; border-radius: 10px; display: flex; align-items: center; gap: 20px;">
+        <div style="font-size: 3em;">${result.winnerAvatar}</div>
+        <div style="flex: 1;">
+          <div style="font-size: 1.5em; font-weight: bold;">${result.winnerName}</div>
+          <div style="font-size: 1.2em; opacity: 0.9;">${result.roleLabel}</div>
+        </div>
+        <div style="font-size: 2em; color: #ffd700;">${result.votes}</div>
+      </div>
+    `).join('')}
+  `;
+  
+  updatePlayersGrid();
+  
+  document.querySelector('#revealPhase > div:last-child').innerHTML = `
+    <button class="btn" onclick="nextRound()" style="font-size: 1.5em; padding: 20px 50px;">Next Round →</button>
+  `;
 }
 
 function showResults(results) {
