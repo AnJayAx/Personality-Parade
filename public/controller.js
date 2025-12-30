@@ -364,10 +364,18 @@ function showResults(results) {
   clearInterval(timerInterval);
   showPage('resultsPage');
   
+  console.log('Showing results:', results);
+  
   document.getElementById('scoreDisplay').textContent = 
-    `Your Score: ${playerData.score} pts`;
+    `Your Score: ${playerData ? playerData.score : 0} pts`;
   
   const container = document.getElementById('resultsContainer');
+  
+  if (!results || Object.keys(results).length === 0) {
+    container.innerHTML = '<div class="result-card"><h2>No results yet...</h2></div>';
+    return;
+  }
+  
   container.innerHTML = Object.values(results).map(result => `
     <div class="result-card">
       <div class="result-role">🏆 ${result.roleLabel}</div>
@@ -377,7 +385,8 @@ function showResults(results) {
       ${result.winnerId === socket.id ? 
         '<div style="font-size: 1.5em; color: #ffd700;">🎉 That\'s you!</div>' : 
         ''}
-      <div class="result-description">${result.description}</div>
+      <div class="result-description">${result.description || 'Amazing performance!'}</div>
+      <div style="margin-top: 10px; color: #ffd700;">${result.votes} vote${result.votes !== 1 ? 's' : ''}</div>
     </div>
   `).join('');
 }
