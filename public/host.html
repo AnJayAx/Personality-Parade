@@ -393,15 +393,23 @@
 <body>
   <div class="container">
     <header>
-      <h1>🎭 Personality Sorter</h1>
+      <h1>� Personality Parade</h1>
       <div class="room-code" id="roomCode">----</div>
+      <div style="text-align: center; margin: 20px 0;">
+        <div style="font-size: 1.2em; margin-bottom: 10px;">Share with friends:</div>
+        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; display: inline-block;">
+          <span id="shareLink" style="font-size: 1.1em;">Loading...</span>
+          <button class="btn" onclick="copyRoomLink()" style="margin-left: 10px; padding: 10px 20px; font-size: 1em;">📋 Copy Link</button>
+        </div>
+      </div>
       <div class="phase-indicator" id="phaseIndicator">Setting up...</div>
     </header>
 
     <div id="lobbyPhase" class="hidden">
+      <h2 style="text-align: center; font-size: 2em; margin-bottom: 20px;">Players (<span id="playerCount">0</span>/8)</h2>
       <div class="players-grid" id="playersGrid"></div>
-      <div style="text-align: center;">
-        <button class="btn" id="startBtn" onclick="startGame()">Start Game</button>
+      <div style="text-align: center; margin-top: 30px;">
+        <button class="btn" id="startBtn" onclick="startGame()" style="font-size: 1.5em; padding: 20px 50px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">Start Game</button>
       </div>
     </div>
 

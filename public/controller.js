@@ -50,6 +50,18 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   
+  // Check for room code in URL (?join=ABCD)
+  const urlParams = new URLSearchParams(window.location.search);
+  const joinCode = urlParams.get('join');
+  if (joinCode) {
+    // Auto-open join screen with room code pre-filled
+    setTimeout(() => {
+      showJoinRoom();
+      document.getElementById('roomCodeInput').value = joinCode.toUpperCase();
+      document.getElementById('playerNameInput').focus();
+    }, 100);
+  }
+  
   // Initialize emoji picker
   const emojiOptions = document.querySelectorAll('.emoji-option');
   if (emojiOptions.length > 0) {

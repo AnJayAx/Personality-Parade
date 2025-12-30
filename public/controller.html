@@ -338,12 +338,12 @@
   <div class="container">
     <!-- Landing page -->
     <div id="landingPage">
-      <h1>🎭 Personality Sorter</h1>
-      <div id="connectionStatus" style="text-align: center; margin-bottom: 20px; padding: 10px; background: rgba(255,255,255,0.15); border-radius: 10px;">
+      <h1 style="font-size: 3em; margin-bottom: 30px;">🎉 Personality Parade</h1>
+      <div id="connectionStatus" style="text-align: center; margin-bottom: 30px; padding: 10px; background: rgba(255,255,255,0.15); border-radius: 10px; font-size: 1.1em;">
         <span id="statusText">Connecting to server...</span>
       </div>
-      <button class="btn" onclick="showCreateRoom()">Create Room</button>
-      <button class="btn" onclick="showJoinRoom()">Join Room</button>
+      <button class="btn" onclick="showCreateRoom()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 1.5em; padding: 25px; margin: 15px 0;">Create Room</button>
+      <button class="btn" onclick="showJoinRoom()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); font-size: 1.5em; padding: 25px; margin: 15px 0;">Join Room</button>
     </div>
 
     <!-- Create room -->
@@ -362,20 +362,20 @@
     <!-- Join room -->
     <div id="joinRoomPage" class="hidden">
       <button class="back-btn btn" onclick="showLanding()">← Back</button>
-      <h1>Join Room</h1>
+      <h1>Join Personality Parade</h1>
       <div class="card">
         <div class="input-group">
-          <label>Room Code</label>
-          <input type="text" id="roomCodeInput" placeholder="Enter 4-letter code" maxlength="4">
+          <label style="font-size: 1.3em;">Room Code</label>
+          <input type="text" id="roomCodeInput" placeholder="Enter 4-letter code" maxlength="4" style="font-size: 1.5em; text-align: center; letter-spacing: 5px;">
         </div>
         
         <div class="input-group">
-          <label>Your Name</label>
-          <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20">
+          <label style="font-size: 1.3em;">Your Name</label>
+          <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20" style="font-size: 1.3em;">
         </div>
         
         <div class="input-group">
-          <label>Choose Avatar</label>
+          <label style="font-size: 1.3em;">Choose Avatar</label>
           <div class="emoji-picker" id="emojiPicker">
             <div class="emoji-option selected" data-emoji="😊">😊</div>
             <div class="emoji-option" data-emoji="😎">😎</div>
@@ -389,12 +389,18 @@
             <div class="emoji-option" data-emoji="👻">👻</div>
             <div class="emoji-option" data-emoji="👽">👽</div>
             <div class="emoji-option" data-emoji="🤖">🤖</div>
+            <div class="emoji-option" data-emoji="🎮">🎮</div>
+            <div class="emoji-option" data-emoji="🎭">🎭</div>
+            <div class="emoji-option" data-emoji="🎨">🎨</div>
+            <div class="emoji-option" data-emoji="🎪">🎪</div>
+            <div class="emoji-option" data-emoji="🐱">🐱</div>
+            <div class="emoji-option" data-emoji="🐶">🐶</div>
           </div>
         </div>
 
         <div id="joinError" class="error-message hidden"></div>
         
-        <button class="btn" id="joinBtn" onclick="joinRoom()">Join Game</button>
+        <button class="btn" id="joinBtn" onclick="joinRoom()" style="font-size: 1.4em; padding: 20px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">Join Game</button>
       </div>
     </div>
 

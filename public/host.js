@@ -48,6 +48,7 @@ socket.on('roomCreated', ({ roomId: newRoomId }) => {
   // Update URL without reload
   window.history.pushState({}, '', `/host/${roomId}`);
   
+  updateShareLink();
   showPhase('lobby');
   updatePhaseIndicator('Waiting for players to join...');
   players = []; // Initialize empty player list
@@ -60,9 +61,27 @@ socket.on('hostJoined', ({ roomId: joinedRoomId, players: roomPlayers }) => {
   players = roomPlayers;
   showPhase('lobby');
   updatePhaseIndicator('Waiting for players to join...');
+  updateShareLink();
   updatePlayersGrid();
   updateStartButton();
 });
+
+function updateShareLink() {
+  const shareUrl = `${window.location.origin}/?join=${roomId}`;
+  const linkEl = document.getElementById('shareLink');
+  if (linkEl) {
+    linkEl.textContent = shareUrl;
+  }
+}
+
+function copyRoomLink() {
+  const shareUrl = `${window.location.origin}/?join=${roomId}`;
+  navigator.clipboard.writeText(shareUrl).then(() => {
+    alert('✅ Link copied! Share it with your friends.');
+  }).catch(() => {
+    alert('Link: ' + shareUrl);
+  });
+}
 
 socket.on('playerJoined', ({ player, players: allPlayers }) => {
   players = allPlayers;
@@ -132,6 +151,12 @@ function updatePhaseIndicator(text) {
 
 function updatePlayersGrid() {
   const grid = document.getElementById('playersGrid');
+  const countEl = document.getElementById('playerCount');
+  
+  if (countEl) {
+    countEl.textContent = players.length;
+  }
+  
   grid.innerHTML = players.map(p => `
     <div class="player-card">
       <div class="player-avatar">${p.avatar}</div>
